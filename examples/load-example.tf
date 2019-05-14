@@ -25,7 +25,7 @@ provider "aws" {
 }
 
 resource "aws_instance" "load-example" {
-  ami           = "ami-01dc3deeaae4b3de4"
+  ami           = ""
   instance_type = "t2.micro"
   key_name      = "aws-tests"
   count         = 5
