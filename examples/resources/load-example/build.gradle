@@ -1,0 +1,20 @@
+plugins {
+    id "com.github.lkishalmi.gatling" version "3.0.2"
+}
+
+apply plugin: 'scala'
+apply plugin: 'com.github.lkishalmi.gatling'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.scala-lang:scala-library:2.12.3'
+    testImplementation group: 'io.gatling.highcharts', name: 'gatling-charts-highcharts', version: '3.0.0'
+}
+gatling {
+    simulations = { include "**/*LoadExample.scala" }
+    
+}

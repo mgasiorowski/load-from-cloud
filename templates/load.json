@@ -1,0 +1,63 @@
+{
+    "variables": {
+      "aws_region": "eu-central-1",
+      "aws_type": "t2.micro"
+    },
+    "builders": [{
+      "name": "load-ami",
+      "ami_name": "load",
+      "ami_description": "Load ami.",
+      "instance_type": "{{user `aws_type`}}",
+      "region": "{{user `aws_region`}}",
+      "type": "amazon-ebs",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "architecture": "x86_64",
+          "name": "CentOS Linux 7 x86_64 HVM EBS ENA*",
+          "block-device-mapping.volume-type": "gp2",
+          "root-device-type": "ebs"
+        },
+        "owners": [""],
+        "most_recent": true
+      },
+      "ami_block_device_mappings": [{
+          "device_name":"/dev/sda1",
+          "volume_size":8,
+          "volume_type":"gp2",
+          "encrypted":false,
+          "delete_on_termination":true
+      }],
+      "ssh_username": "centos",
+      "encrypt_boot": false,
+      "sriov_support" : true,
+      "ena_support" : true
+    }],
+    "provisioners": [{
+      "type": "file",
+      "source": "resources/",
+      "destination": "/tmp"
+    },{
+      "type": "shell",
+      "inline": [
+        "sudo setenforce Permissive",
+        "sudo yum --enablerepo=extras install -y epel-release",
+        "sudo yum install -y java luarocks lua-devel python36 --enablerepo=epel",
+        "sudo yum install -y make gcc gcc-c++ openssl-devel bzip2-devel bind-utils nc which curl wget",
+        "sudo yum clean all",
+        "sudo sh -c 'curl https://bootstrap.pypa.io/get-pip.py | python36'",
+        "sudo sh -c 'export PATH=$PATH:/usr/local/bin; pip3.6 install virtualenv pipenv'"
+      ]
+    },{
+      "type": "shell",
+      "inline": [
+        "sudo sysctl -w net.ipv4.ip_local_port_range=\"1025 65535\"",
+        "echo 300000 | sudo tee /proc/sys/fs/nr_open",
+        "echo 300000 | sudo tee /proc/sys/fs/file-max",
+        "sudo mv /tmp/99-sysctl-tuning-perf.conf /etc/sysctl.d/",
+        "sudo sh -c 'echo  \"\n*       soft    nofile  65535\" >> /etc/security/limits.conf'",
+        "sudo sh -c 'echo  \"\n*       hard    nofile  65535\" >> /etc/security/limits.conf'"
+      ]
+    }]
+  }
+  
